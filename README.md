@@ -197,12 +197,46 @@ ffmpeg -version
 sudo systemctl restart nzbget
 ```
 
-If `unrar` is not available on Debian 12 Bookworm, enable `contrib`, `non-free`, and `non-free-firmware` in `/etc/apt/sources.list`:
+If `unrar` is not available on Debian 12 Bookworm, enable `contrib`, `non-free`, and `non-free-firmware`.
+
+On fresh Debian 12 installs, do not blindly add duplicate `deb ...` lines to `/etc/apt/sources.list`. Debian often uses this file instead:
 
 ```text
-deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+/etc/apt/sources.list.d/debian.sources
+```
+
+Edit it:
+
+```bash
+sudo nano /etc/apt/sources.list.d/debian.sources
+```
+
+If the file is blank, paste this complete Debian 12 Bookworm source definition:
+
+```text
+Types: deb
+URIs: http://deb.debian.org/debian
+Suites: bookworm bookworm-updates
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.debian.org/debian-security
+Suites: bookworm-security
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+```
+
+Change each Debian `Components:` line from:
+
+```text
+Components: main
+```
+
+to:
+
+```text
+Components: main contrib non-free non-free-firmware
 ```
 
 Then run:
@@ -212,6 +246,23 @@ sudo apt update
 sudo apt install -y unrar 7zip p7zip-full ffmpeg
 sudo systemctl restart nzbget
 ```
+
+If `apt update` complains about duplicate entries, remove or comment the duplicate lines you added to `/etc/apt/sources.list`. Keep one source style only: either the Debian 12 `.sources` file or old-style `deb ...` lines, not both.
+
+Recommended final Debian 12 layout:
+
+```bash
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+sudo nano /etc/apt/sources.list
+```
+
+Comment out every active `deb` line in `/etc/apt/sources.list`, or leave the file empty. Then save the real Debian repo configuration in:
+
+```text
+/etc/apt/sources.list.d/debian.sources
+```
+
+After that, `apt update` should no longer warn that targets are configured multiple times.
 
 In NZBGet, confirm unpacking is enabled:
 
@@ -279,6 +330,26 @@ If the Arr app still hangs when testing NZBGet, use the Docker network gateway d
 ```
 
 Find the gateway for the Compose network:
+
+If this says `network media not found`, the stack has not created the network yet. Create it by starting the stack, or create the network early:
+
+```bash
+cd /opt/media-stack
+docker compose up -d
+```
+
+or:
+
+```bash
+docker network create --subnet 172.18.0.0/16 --gateway 172.18.0.1 media
+```
+
+This project pins the Compose `media` network to:
+
+```text
+Subnet:  172.18.0.0/16
+Gateway: 172.18.0.1
+```
 
 ```bash
 docker network inspect media -f '{{(index .IPAM.Config 0).Gateway}}'
@@ -571,6 +642,8 @@ NZBGet is native on Debian and does not need to know about Caddy for the Arr app
 ```
 
 If your Docker network gateway is different, update the `reverse_proxy` line in `/opt/media-stack/caddy/Caddyfile` using:
+
+If this command says `network media not found`, run `docker compose up -d` from `/opt/media-stack` first. The `media` network is created by Docker Compose.
 
 ```bash
 docker network inspect media -f '{{(index .IPAM.Config 0).Gateway}}'

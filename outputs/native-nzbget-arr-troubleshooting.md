@@ -26,6 +26,19 @@ On this install, `host.docker.internal` resolved but the Arr test still hung. Th
 
 Find the gateway and subnet on another install with:
 
+If `docker network inspect media` says `network media not found`, the stack has not created the network yet. Create it by starting the stack from `/opt/media-stack`, or create the pinned network manually:
+
+```bash
+cd /opt/media-stack
+docker compose up -d
+```
+
+or:
+
+```bash
+docker network create --subnet 172.18.0.0/16 --gateway 172.18.0.1 media
+```
+
 ```bash
 docker network inspect media -f '{{(index .IPAM.Config 0).Gateway}}'
 docker network inspect media -f '{{(index .IPAM.Config 0).Subnet}}'
@@ -158,7 +171,56 @@ ffmpeg -version
 sudo systemctl restart nzbget
 ```
 
-If `unrar` is unavailable on Debian 12 Bookworm, enable `contrib`, `non-free`, and `non-free-firmware` in `/etc/apt/sources.list`, then run the install again.
+If `unrar` is unavailable on Debian 12 Bookworm, enable `contrib`, `non-free`, and `non-free-firmware`, then run the install again.
+
+On fresh Debian 12 installs, prefer editing:
+
+```text
+/etc/apt/sources.list.d/debian.sources
+```
+
+If the file is blank, paste this complete Debian 12 Bookworm source definition:
+
+```text
+Types: deb
+URIs: http://deb.debian.org/debian
+Suites: bookworm bookworm-updates
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.debian.org/debian-security
+Suites: bookworm-security
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+```
+
+Change each Debian `Components:` line from:
+
+```text
+Components: main
+```
+
+to:
+
+```text
+Components: main contrib non-free non-free-firmware
+```
+
+If `apt update` complains about duplicate entries, remove or comment the duplicate lines added to `/etc/apt/sources.list`. Keep one source style only: either the Debian 12 `.sources` file or old-style `deb ...` lines, not both.
+
+Recommended final Debian 12 layout:
+
+```bash
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+sudo nano /etc/apt/sources.list
+```
+
+Comment out every active `deb` line in `/etc/apt/sources.list`, or leave the file empty. Keep the actual Debian repo definition in:
+
+```text
+/etc/apt/sources.list.d/debian.sources
+```
 
 In NZBGet, confirm:
 

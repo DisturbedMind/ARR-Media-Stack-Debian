@@ -67,7 +67,38 @@ if ! run_sudo apt install -y unrar; then
   cat >&2 <<'WARN'
 
 WARNING: apt could not install "unrar".
-On Debian 12 Bookworm, enable contrib/non-free/non-free-firmware in /etc/apt/sources.list, then run:
+On Debian 12 Bookworm, enable contrib/non-free/non-free-firmware.
+
+Fresh Debian 12 installs often use:
+  /etc/apt/sources.list.d/debian.sources
+
+If that file is blank, paste this full Debian 12 Bookworm definition:
+
+  Types: deb
+  URIs: http://deb.debian.org/debian
+  Suites: bookworm bookworm-updates
+  Components: main contrib non-free non-free-firmware
+  Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+  Types: deb
+  URIs: http://security.debian.org/debian-security
+  Suites: bookworm-security
+  Components: main contrib non-free non-free-firmware
+  Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Edit that file and change each Debian Components line from:
+  Components: main
+
+to:
+  Components: main contrib non-free non-free-firmware
+
+Do not add duplicate old-style deb lines to /etc/apt/sources.list if
+/etc/apt/sources.list.d/debian.sources already defines the same repos.
+Recommended final layout: comment out every active deb line in
+/etc/apt/sources.list and keep the real Debian repo definition in
+/etc/apt/sources.list.d/debian.sources.
+
+Then run:
 
   sudo apt update
   sudo apt install -y unrar
