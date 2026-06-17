@@ -26,17 +26,31 @@ On this install, `host.docker.internal` resolved but the Arr test still hung. Th
 
 Find the gateway and subnet on another install with:
 
-If `docker network inspect media` says `network media not found`, the stack has not created the network yet. Create it by starting the stack from `/opt/media-stack`, or create the pinned network manually:
+If `docker network inspect media` says `network media not found`, the stack has not created the network yet. Create it by starting the stack from `/opt/media-stack`:
 
 ```bash
 cd /opt/media-stack
 docker compose up -d
 ```
 
-or:
+Do not create the `media` network manually with `docker network create`. Docker Compose needs to create it so the correct Compose labels are attached.
+
+If Docker says the network exists but has an incorrect `com.docker.compose.network` label, it was probably created manually. Remove it and let Compose recreate it:
 
 ```bash
-docker network create --subnet 172.18.0.0/16 --gateway 172.18.0.1 media
+docker network rm media
+cd /opt/media-stack
+docker compose up -d
+```
+
+If Docker says the network has active endpoints, stop anything attached first:
+
+```bash
+docker ps --filter network=media
+cd /opt/media-stack
+docker compose down
+docker network rm media
+docker compose up -d
 ```
 
 ```bash

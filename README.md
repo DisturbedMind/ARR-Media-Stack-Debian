@@ -331,17 +331,37 @@ If the Arr app still hangs when testing NZBGet, use the Docker network gateway d
 
 Find the gateway for the Compose network:
 
-If this says `network media not found`, the stack has not created the network yet. Create it by starting the stack, or create the network early:
+If this says `network media not found`, the stack has not created the network yet. Create it by starting the stack:
 
 ```bash
 cd /opt/media-stack
 docker compose up -d
 ```
 
-or:
+Do not create the `media` network manually with `docker network create`. Docker Compose needs to create it so the correct Compose labels are attached.
+
+If you already created it manually, Compose may fail with:
+
+```text
+network media was found but has incorrect label com.docker.compose.network set to "" (expected: "media")
+```
+
+Fix that by removing the manually-created network, then let Compose recreate it:
 
 ```bash
-docker network create --subnet 172.18.0.0/16 --gateway 172.18.0.1 media
+docker network rm media
+cd /opt/media-stack
+docker compose up -d
+```
+
+If Docker says the network has active endpoints, stop anything attached first:
+
+```bash
+docker ps --filter network=media
+cd /opt/media-stack
+docker compose down
+docker network rm media
+docker compose up -d
 ```
 
 This project pins the Compose `media` network to:
@@ -644,6 +664,24 @@ NZBGet is native on Debian and does not need to know about Caddy for the Arr app
 If your Docker network gateway is different, update the `reverse_proxy` line in `/opt/media-stack/caddy/Caddyfile` using:
 
 If this command says `network media not found`, run `docker compose up -d` from `/opt/media-stack` first. The `media` network is created by Docker Compose.
+
+If Docker says the network exists but has an incorrect `com.docker.compose.network` label, it was probably created manually. Remove it and let Compose recreate it:
+
+```bash
+docker network rm media
+cd /opt/media-stack
+docker compose up -d
+```
+
+If Docker says the network has active endpoints, stop anything attached first:
+
+```bash
+docker ps --filter network=media
+cd /opt/media-stack
+docker compose down
+docker network rm media
+docker compose up -d
+```
 
 ```bash
 docker network inspect media -f '{{(index .IPAM.Config 0).Gateway}}'
