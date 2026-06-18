@@ -657,6 +657,23 @@ With this external Caddy layout, keep all Arr `URL Base` fields blank.
 
 Do not use `172.18.0.1` in the external Caddyfile. `172.18.0.1` is only for Docker containers talking back to native NZBGet. Your external Caddy server must proxy to the Debian server LAN IP.
 
+If Caddy fails with `bind: cannot assign requested address`, the Caddyfile is trying to listen on an IP address that the Caddy machine does not own. Check the server IPs:
+
+```bash
+ip -br addr
+```
+
+For this guide's external hostname Caddyfile, the best fix is to remove any `bind 192.168.137.x` lines:
+
+```bash
+sudo sed -i '/^[[:space:]]*bind 192\\.168\\.137\\./d' /etc/caddy/Caddyfile
+sudo caddy fmt --overwrite /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl restart caddy
+```
+
+If you really want to bind Caddy to one IP only, that IP must appear in `ip -br addr` on the Caddy server. For example, do not bind to `192.168.137.253` if the server is actually `192.168.137.251`.
+
 If restarting Caddy shows port `80` is already owned by `docker-proxy`, the internal Docker Caddy container is still running. Stop and remove it:
 
 ```bash

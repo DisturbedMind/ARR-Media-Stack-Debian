@@ -69,6 +69,31 @@ git clone https://github.com/DisturbedMind/arr-media-stack-debian.git
 cd /tmp/arr-media-stack-debian
 ```
 
+## Caddy cannot assign requested address
+
+If Caddy fails with:
+
+```text
+bind: cannot assign requested address
+```
+
+then `/etc/caddy/Caddyfile` has a `bind` line for an IP address that is not on that Caddy server. Check:
+
+```bash
+ip -br addr
+```
+
+For the external hostname Caddyfile, remove the bind lines:
+
+```bash
+sudo sed -i '/^[[:space:]]*bind 192\\.168\\.137\\./d' /etc/caddy/Caddyfile
+sudo caddy fmt --overwrite /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl restart caddy
+```
+
+The DNS records should point to the Caddy server IP, but the Caddyfile does not need `bind 192.168.137.x` lines.
+
 On this install, `host.docker.internal` resolved but the Arr test still hung. The working fix was to use the Docker Compose network gateway directly:
 
 ```text

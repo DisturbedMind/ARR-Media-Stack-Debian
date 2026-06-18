@@ -22,43 +22,39 @@
 # Important:
 #   172.18.0.1 is only for Docker containers talking to native NZBGet.
 #   External Caddy should proxy to the Debian server LAN IP, not 172.18.0.1.
+#   No bind directive is used here. Caddy will listen on all local interfaces
+#   for these hostnames, which avoids "cannot assign requested address" errors.
 
 {
 	auto_https off
 }
 
 http://radarr.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:7878
 }
 
 http://sonarr.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:8989
 }
 
 http://lidarr.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:8686
 }
 
 http://whisparrv3.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:6969
 }
 
 http://whisparrv2.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:6970
 }
 
 http://nzbget.media.home.arpa {
-	bind 192.168.137.251
 	encode gzip
 	reverse_proxy ARR_STACK_IP:6789
 }
