@@ -1,0 +1,64 @@
+# External LAN Caddy example for this stack.
+#
+# Caddy runs on:
+#   192.168.137.251
+#
+# This version does not use /radarr, /sonarr, /lidarr, or any other path base.
+# Keep every Arr app URL Base blank.
+#
+# Replace ARR_STACK_IP below with the Debian server IP that runs Docker + NZBGet.
+# If Caddy is running on the same Debian server as the stack, use 127.0.0.1.
+#
+# Your LAN DNS, router DNS, Pi-hole/AdGuard, or client hosts files must point
+# these names to 192.168.137.251:
+#
+#   radarr.media.home.arpa       -> 192.168.137.251
+#   sonarr.media.home.arpa       -> 192.168.137.251
+#   lidarr.media.home.arpa       -> 192.168.137.251
+#   whisparrv3.media.home.arpa   -> 192.168.137.251
+#   whisparrv2.media.home.arpa   -> 192.168.137.251
+#   nzbget.media.home.arpa       -> 192.168.137.251
+#
+# Important:
+#   172.18.0.1 is only for Docker containers talking to native NZBGet.
+#   External Caddy should proxy to the Debian server LAN IP, not 172.18.0.1.
+
+{
+	auto_https off
+}
+
+http://radarr.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:7878
+}
+
+http://sonarr.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:8989
+}
+
+http://lidarr.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:8686
+}
+
+http://whisparrv3.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6969
+}
+
+http://whisparrv2.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6970
+}
+
+http://nzbget.media.home.arpa {
+	bind 192.168.137.251
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6789
+}

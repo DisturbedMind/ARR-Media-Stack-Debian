@@ -546,7 +546,7 @@ Caddy is included as an internal HTTP reverse proxy on port `80`.
 
 This guide runs Caddy in Docker using the official `caddy:2-alpine` image. You do not need to install Caddy with `apt` on Debian for this stack.
 
-You have two clean choices:
+You have three clean choices:
 
 ```text
 Option A: Path-based Caddy
@@ -558,9 +558,83 @@ Option B: Direct ports, or hostname-based Caddy
 Use http://DEBIAN_SERVER_IP:7878/ directly, or names like http://radarr.media.home.arpa/.
 Keep every Arr URL Base blank.
 This is usually less confusing while you are still testing downloads and imports.
+
+Option C: External LAN Caddy on 192.168.137.251
+Use names like http://radarr.media.home.arpa/ through your existing Caddy server.
+Keep every Arr URL Base blank.
+This is the recommended option if you already run Caddy at 192.168.137.251.
 ```
 
-The download client settings do not change in either option. The Arr apps should still connect to native NZBGet at `172.18.0.1:6789` with download-client `Url Base` blank.
+The download client settings do not change in any option. The Arr apps should still connect to native NZBGet at `172.18.0.1:6789` with download-client `Url Base` blank.
+
+If your Caddy server is external on `192.168.137.251`, use:
+
+```text
+caddy/Caddyfile.external-192.168.137.251.example
+```
+
+In that file, replace `ARR_STACK_IP` with the Debian server IP that runs Docker and NZBGet. If Caddy runs on the same Debian server as the stack, use `127.0.0.1`.
+
+On the Caddy server, install it like this:
+
+```bash
+sudo cp caddy/Caddyfile.external-192.168.137.251.example /etc/caddy/Caddyfile
+sudo sed -i 's/ARR_STACK_IP/DEBIAN_SERVER_IP/g' /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+```
+
+Replace `DEBIAN_SERVER_IP` in the command with the real Debian ARR stack IP before running it. If Caddy and the ARR stack are on the same Debian machine, use this instead:
+
+```bash
+sudo sed -i 's/ARR_STACK_IP/127.0.0.1/g' /etc/caddy/Caddyfile
+```
+
+Point these LAN DNS names to `192.168.137.251`:
+
+```text
+radarr.media.home.arpa
+sonarr.media.home.arpa
+lidarr.media.home.arpa
+whisparrv3.media.home.arpa
+whisparrv2.media.home.arpa
+nzbget.media.home.arpa
+```
+
+Then browse to:
+
+```text
+Radarr:      http://radarr.media.home.arpa/
+Sonarr:      http://sonarr.media.home.arpa/
+Lidarr:      http://lidarr.media.home.arpa/
+Whisparr v3: http://whisparrv3.media.home.arpa/
+Whisparr v2: http://whisparrv2.media.home.arpa/
+NZBGet:      http://nzbget.media.home.arpa/
+```
+
+With this external Caddy layout, keep all Arr `URL Base` fields blank.
+
+Do not use `172.18.0.1` in the external Caddyfile. `172.18.0.1` is only for Docker containers talking back to native NZBGet. Your external Caddy server must proxy to the Debian server LAN IP.
+
+On the Debian ARR stack server, allow the Caddy server to reach the app ports:
+
+```bash
+sudo ufw allow from 192.168.137.251 to any port 7878 proto tcp
+sudo ufw allow from 192.168.137.251 to any port 8989 proto tcp
+sudo ufw allow from 192.168.137.251 to any port 8686 proto tcp
+sudo ufw allow from 192.168.137.251 to any port 6969 proto tcp
+sudo ufw allow from 192.168.137.251 to any port 6970 proto tcp
+sudo ufw allow from 192.168.137.251 to any port 6789 proto tcp
+sudo ufw reload
+```
+
+If you do not want LAN DNS names and Caddy really runs on a different IP from the ARR stack, you can use the port-mirror example instead:
+
+```text
+caddy/Caddyfile.external-port-mirror-192.168.137.251.example
+```
+
+That gives you URLs like `http://192.168.137.251:7878/`, but do not use it if Caddy and the ARR stack are on the same host/IP, because the ports will conflict.
 
 The Caddy service is already included in:
 
@@ -578,6 +652,12 @@ That file is the path-based Caddy config. A no-URL-Base hostname example is also
 
 ```text
 caddy/Caddyfile.hostnames.example
+```
+
+For an already-running external Caddy server at `192.168.137.251`, prefer:
+
+```text
+caddy/Caddyfile.external-192.168.137.251.example
 ```
 
 On the Debian server, the live Caddy paths are:
@@ -965,6 +1045,8 @@ docker compose up -d
 - [Docker NZBGet Compose](compose/docker-nzbget.yml)
 - [Caddyfile](caddy/Caddyfile)
 - [Hostname Caddyfile example](caddy/Caddyfile.hostnames.example)
+- [External Caddy on 192.168.137.251 example](caddy/Caddyfile.external-192.168.137.251.example)
+- [External Caddy port-mirror example](caddy/Caddyfile.external-port-mirror-192.168.137.251.example)
 - [Env example](examples/media-stack.env.example)
 - [SMB fstab example](examples/fstab-smb-example.txt)
 - [Native NZBGet notes](outputs/native-nzbget-arr-troubleshooting.md)
