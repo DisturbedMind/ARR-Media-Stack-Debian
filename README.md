@@ -542,11 +542,19 @@ NZBGet:      http://DEBIAN_SERVER_IP:6789
 ```
 
 These direct URLs assume the Arr app `URL Base` fields are blank. If you later set `URL Base` for path-based Caddy access, the direct URLs also need the path, for example `http://DEBIAN_SERVER_IP:7878/radarr/`.
-## 9. Internal Caddy Reverse Proxy
+## 9. Caddy Reverse Proxy
 
-Caddy is included as an internal HTTP reverse proxy on port `80`.
+Caddy can be used in two ways with this stack:
 
-This guide runs Caddy in Docker using the official `caddy:2-alpine` image. You do not need to install Caddy with `apt` on Debian for this stack.
+```text
+Preferred for this install:
+External LAN Caddy on 192.168.137.253 using wolf.den hostnames.
+
+Optional:
+Internal Docker Caddy using the official caddy:2-alpine image.
+```
+
+For the current setup, use Option C. The internal Docker Caddy service is kept as an optional profile only, so it does not take port `80` from your normal Caddy server.
 
 You have three clean choices:
 
@@ -565,6 +573,16 @@ Option C: External LAN Caddy on 192.168.137.253
 Use names like http://radarr.wolf.den/ through your existing Caddy server.
 Keep every Arr URL Base blank.
 This is the recommended option if you already run Caddy at 192.168.137.253.
+```
+
+Option C means:
+
+```text
+DNS names point to the Caddy server IP.
+Caddy reverse_proxy points to the ARR stack IP and app ports.
+Arr URL Base fields stay blank.
+Arr download-client Host stays 172.18.0.1 for native NZBGet.
+Do not start the internal Docker Caddy container.
 ```
 
 On this install, the Caddy server moved to `192.168.137.253` and the DNS zone is `wolf.den`. Use this current file:
