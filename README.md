@@ -561,11 +561,48 @@ Use http://DEBIAN_SERVER_IP:7878/ directly, or names like http://radarr.media.ho
 Keep every Arr URL Base blank.
 This is usually less confusing while you are still testing downloads and imports.
 
-Option C: External LAN Caddy on 192.168.137.251
-Use names like http://radarr.media.home.arpa/ through your existing Caddy server.
+Option C: External LAN Caddy on 192.168.137.253
+Use names like http://radarr.wolf.den/ through your existing Caddy server.
 Keep every Arr URL Base blank.
-This is the recommended option if you already run Caddy at 192.168.137.251.
+This is the recommended option if you already run Caddy at 192.168.137.253.
 ```
+
+On this install, the Caddy server moved to `192.168.137.253` and the DNS zone is `wolf.den`. Use this current file:
+
+```text
+caddy/Caddyfile.external-wolf.den.example
+```
+
+It expects these DNS records:
+
+```text
+radarr.wolf.den       -> 192.168.137.253
+sonarr.wolf.den       -> 192.168.137.253
+lidarr.wolf.den       -> 192.168.137.253
+whisparrv3.wolf.den   -> 192.168.137.253
+whisparrv2.wolf.den   -> 192.168.137.253
+nzbget.wolf.den       -> 192.168.137.253
+```
+
+If only `radarr.wolf.den` works, check all three layers:
+
+```bash
+# 1. DNS should return 192.168.137.253 for every name.
+for app in radarr sonarr lidarr whisparrv3 whisparrv2 nzbget; do getent hosts "$app.wolf.den"; done
+
+# 2. Caddyfile should contain every wolf.den hostname.
+grep -E 'radarr|sonarr|lidarr|whisparrv3|whisparrv2|nzbget' /etc/caddy/Caddyfile
+
+# 3. From the Caddy server, the backends should answer on their ports.
+curl -I http://ARR_STACK_IP:7878
+curl -I http://ARR_STACK_IP:8989
+curl -I http://ARR_STACK_IP:8686
+curl -I http://ARR_STACK_IP:6969
+curl -I http://ARR_STACK_IP:6970
+curl -I http://ARR_STACK_IP:6789
+```
+
+Replace `ARR_STACK_IP` with the Debian ARR stack IP, or use `127.0.0.1` if Caddy and the ARR stack are on the same machine.
 
 The download client settings do not change in any option. The Arr apps should still connect to native NZBGet at `172.18.0.1:6789` with download-client `Url Base` blank.
 
@@ -573,6 +610,12 @@ If your Caddy server is external on `192.168.137.251`, use:
 
 ```text
 caddy/Caddyfile.external-192.168.137.251.example
+```
+
+For the current `wolf.den` setup on `192.168.137.253`, use:
+
+```text
+caddy/Caddyfile.external-wolf.den.example
 ```
 
 In that file, replace `ARR_STACK_IP` with the Debian server IP that runs Docker and NZBGet. If Caddy runs on the same Debian server as the stack, use `127.0.0.1`.
@@ -598,14 +641,31 @@ sudo apt install -y caddy
 
 After that, `systemctl status caddy` should work.
 
-Then install this project's Caddyfile. Run this from the cloned GitHub repo, not from `/etc/caddy` or `/opt/media-stack`:
+Then install this project's Caddyfile. Run this from the cloned GitHub repo, not from `/etc/caddy` or `/opt/media-stack`.
+
+For the current `wolf.den` setup:
+
+```bash
+cd /tmp/arr-media-stack-debian
+git pull
+ls -l caddy/Caddyfile.external-wolf.den.example
+sudo cp caddy/Caddyfile.external-wolf.den.example /etc/caddy/Caddyfile
+ARR_STACK_IP="PUT_THE_DEBIAN_ARR_STACK_IP_HERE"
+sudo sed -i "s/ARR_STACK_IP/${ARR_STACK_IP}/g" /etc/caddy/Caddyfile
+sudo caddy fmt --overwrite /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+```
+
+For the older `media.home.arpa` example:
 
 ```bash
 cd /tmp/arr-media-stack-debian
 git pull
 ls -l caddy/Caddyfile.external-192.168.137.251.example
 sudo cp caddy/Caddyfile.external-192.168.137.251.example /etc/caddy/Caddyfile
-sudo sed -i 's/ARR_STACK_IP/DEBIAN_SERVER_IP/g' /etc/caddy/Caddyfile
+ARR_STACK_IP="PUT_THE_DEBIAN_ARR_STACK_IP_HERE"
+sudo sed -i "s/ARR_STACK_IP/${ARR_STACK_IP}/g" /etc/caddy/Caddyfile
 sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 ```
@@ -613,6 +673,7 @@ sudo systemctl reload caddy
 If `ls` says the file does not exist, you are either in the wrong folder or the repo is old. Find the repo copy with:
 
 ```bash
+sudo find /tmp /opt /root "$HOME" -path '*/caddy/Caddyfile.external-wolf.den.example' -type f 2>/dev/null
 sudo find /tmp /opt /root "$HOME" -path '*/caddy/Caddyfile.external-192.168.137.251.example' -type f 2>/dev/null
 ```
 
@@ -625,13 +686,13 @@ git clone https://github.com/DisturbedMind/arr-media-stack-debian.git
 cd /tmp/arr-media-stack-debian
 ```
 
-Replace `DEBIAN_SERVER_IP` in the command with the real Debian ARR stack IP before running it. If Caddy and the ARR stack are on the same Debian machine, use this instead:
+Replace `PUT_THE_DEBIAN_ARR_STACK_IP_HERE` with the real Debian ARR stack IP before running it. If Caddy and the ARR stack are on the same Debian machine, use this instead:
 
 ```bash
 sudo sed -i 's/ARR_STACK_IP/127.0.0.1/g' /etc/caddy/Caddyfile
 ```
 
-Point these LAN DNS names to `192.168.137.251`:
+For the older `media.home.arpa` example, point these LAN DNS names to `192.168.137.251`:
 
 ```text
 radarr.media.home.arpa
@@ -697,12 +758,12 @@ If `systemctl restart caddy` still says `Unit caddy.service not found`, do not k
 On the Debian ARR stack server, allow the Caddy server to reach the app ports:
 
 ```bash
-sudo ufw allow from 192.168.137.251 to any port 7878 proto tcp
-sudo ufw allow from 192.168.137.251 to any port 8989 proto tcp
-sudo ufw allow from 192.168.137.251 to any port 8686 proto tcp
-sudo ufw allow from 192.168.137.251 to any port 6969 proto tcp
-sudo ufw allow from 192.168.137.251 to any port 6970 proto tcp
-sudo ufw allow from 192.168.137.251 to any port 6789 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 7878 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 8989 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 8686 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 6969 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 6970 proto tcp
+sudo ufw allow from 192.168.137.253 to any port 6789 proto tcp
 sudo ufw reload
 ```
 
@@ -1137,6 +1198,7 @@ docker compose up -d
 - [Docker NZBGet Compose](compose/docker-nzbget.yml)
 - [Caddyfile](caddy/Caddyfile)
 - [Hostname Caddyfile example](caddy/Caddyfile.hostnames.example)
+- [Wolf Den external Caddy example](caddy/Caddyfile.external-wolf.den.example)
 - [External Caddy on 192.168.137.251 example](caddy/Caddyfile.external-192.168.137.251.example)
 - [External Caddy port-mirror example](caddy/Caddyfile.external-port-mirror-192.168.137.251.example)
 - [Env example](examples/media-stack.env.example)

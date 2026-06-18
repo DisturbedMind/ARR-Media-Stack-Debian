@@ -94,6 +94,41 @@ sudo systemctl restart caddy
 
 The DNS records should point to the Caddy server IP, but the Caddyfile does not need `bind 192.168.137.x` lines.
 
+## Only one Caddy hostname works
+
+For the current `wolf.den` setup, every DNS name must point to the Caddy server IP:
+
+```text
+radarr.wolf.den       -> 192.168.137.253
+sonarr.wolf.den       -> 192.168.137.253
+lidarr.wolf.den       -> 192.168.137.253
+whisparrv3.wolf.den   -> 192.168.137.253
+whisparrv2.wolf.den   -> 192.168.137.253
+nzbget.wolf.den       -> 192.168.137.253
+```
+
+If `radarr.wolf.den` works but the others do not:
+
+```bash
+for app in radarr sonarr lidarr whisparrv3 whisparrv2 nzbget; do getent hosts "$app.wolf.den"; done
+grep -E 'radarr|sonarr|lidarr|whisparrv3|whisparrv2|nzbget' /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo journalctl -u caddy -n 80 --no-pager
+```
+
+If DNS is correct and Caddy has all hostnames, test backend reachability from the Caddy server:
+
+```bash
+curl -I http://ARR_STACK_IP:7878
+curl -I http://ARR_STACK_IP:8989
+curl -I http://ARR_STACK_IP:8686
+curl -I http://ARR_STACK_IP:6969
+curl -I http://ARR_STACK_IP:6970
+curl -I http://ARR_STACK_IP:6789
+```
+
+Replace `ARR_STACK_IP` with the Debian ARR stack IP, or use `127.0.0.1` if Caddy and the stack are on the same server.
+
 On this install, `host.docker.internal` resolved but the Arr test still hung. The working fix was to use the Docker Compose network gateway directly:
 
 ```text

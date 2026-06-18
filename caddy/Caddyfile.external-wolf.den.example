@@ -1,0 +1,55 @@
+# External LAN Caddy example for rudi's wolf.den setup.
+#
+# Caddy runs on:
+#   192.168.137.253
+#
+# DNS records should point these names to 192.168.137.253:
+#
+#   radarr.wolf.den
+#   sonarr.wolf.den
+#   lidarr.wolf.den
+#   whisparrv3.wolf.den
+#   whisparrv2.wolf.den
+#   nzbget.wolf.den
+#
+# Keep every Arr app URL Base blank.
+#
+# Replace ARR_STACK_IP below with the Debian server IP that runs Docker + NZBGet.
+# If Caddy is running on the same Debian server as the stack, use 127.0.0.1.
+#
+# Do not use 172.18.0.1 here. 172.18.0.1 is only for Docker containers
+# talking back to native NZBGet.
+
+{
+	auto_https off
+}
+
+http://radarr.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:7878
+}
+
+http://sonarr.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:8989
+}
+
+http://lidarr.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:8686
+}
+
+http://whisparrv3.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6969
+}
+
+http://whisparrv2.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6970
+}
+
+http://nzbget.wolf.den {
+	encode gzip
+	reverse_proxy ARR_STACK_IP:6789
+}
