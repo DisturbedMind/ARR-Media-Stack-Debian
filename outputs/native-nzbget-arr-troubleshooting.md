@@ -235,6 +235,14 @@ If `ip -br addr` does not show `192.168.137.253`, fix the server IP first or poi
 
 `docker0` being `DOWN` is not the cause of a localhost `200` and LAN-IP failure. That symptom is at the Caddy listener/network layer. Docker only matters after Caddy accepts the request and proxies to an Arr backend.
 
+If `ss` shows Caddy listening on `*:80`, Caddy is listening on all local interfaces. The next split is:
+
+```bash
+curl -v -H 'Host: radarr.wolf.den' http://192.168.137.253/
+```
+
+If that works locally on floki but Windows still gets `Connection refused`, stop changing Caddy. Check host firewall rules, Proxmox/VM bridge rules, router ACLs, Windows network profile/firewall, or whether the client is actually on the same reachable subnet.
+
 On this install, `host.docker.internal` resolved but the Arr test still hung. The working fix was to use the Docker Compose network gateway directly:
 
 ```text
