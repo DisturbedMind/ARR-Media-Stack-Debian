@@ -705,6 +705,17 @@ sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl restart caddy
 ```
 
+Then confirm Caddy is listening on the LAN:
+
+```bash
+sudo ss -ltnp '( sport = :80 )'
+curl -v -H 'Host: radarr.wolf.den' http://192.168.137.253/
+```
+
+If `ip -br addr` does not show `192.168.137.253` on a network interface, fix the server IP first or change DNS to the IP the Caddy server actually owns.
+
+`docker0` being `DOWN` does not explain this specific symptom. A localhost `200` with a LAN-IP failure happens at the Caddy listener/network layer before Docker is involved. Docker matters later, when Caddy proxies to the Arr backend ports.
+
 Also make sure the browser is using plain HTTP, not HTTPS:
 
 ```text

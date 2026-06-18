@@ -224,6 +224,17 @@ sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl restart caddy
 ```
 
+Then confirm Caddy listens on the LAN:
+
+```bash
+sudo ss -ltnp '( sport = :80 )'
+curl -v -H 'Host: radarr.wolf.den' http://192.168.137.253/
+```
+
+If `ip -br addr` does not show `192.168.137.253`, fix the server IP first or point DNS to the IP that the Caddy server actually owns.
+
+`docker0` being `DOWN` is not the cause of a localhost `200` and LAN-IP failure. That symptom is at the Caddy listener/network layer. Docker only matters after Caddy accepts the request and proxies to an Arr backend.
+
 On this install, `host.docker.internal` resolved but the Arr test still hung. The working fix was to use the Docker Compose network gateway directly:
 
 ```text
