@@ -1,6 +1,6 @@
 ![Wolf](assets/wolf.png)
 
-# arr-media-stack-debian
+# Debian ARR Media Stack Installer
 
 A Debian 12.11 install guide and helper script for a home ARR media stack using Docker for Radarr, Sonarr, Lidarr, Whisparr v3, and Whisparr v2, with NZBGet installed natively on Debian and media stored on Windows SMB shares.
 
