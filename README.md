@@ -68,23 +68,19 @@ Use only content you have the right to access. Indexer registrations, API limits
 
 Common NZB indexers to look at:
 
-```text
-NZBGeek
-NZBFinder
-NZBPlanet
-DrunkenSlug
-DogNZB
-```
+- <a href="https://nzbgeek.info/" target="_blank" rel="noopener noreferrer">NZBGeek</a>
+- <a href="https://nzbfinder.ws/" target="_blank" rel="noopener noreferrer">NZBFinder</a>
+- <a href="https://nzbplanet.net/" target="_blank" rel="noopener noreferrer">NZBPlanet</a>
+- <a href="https://drunkenslug.com/" target="_blank" rel="noopener noreferrer">DrunkenSlug</a>
+- <a href="https://dognzb.cr/" target="_blank" rel="noopener noreferrer">DogNZB</a>
 
 Common Usenet providers/news servers to look at:
 
-```text
-Newshosting
-Eweka
-Easynews
-UsenetServer
-TweakNews
-```
+- <a href="https://www.newshosting.com/" target="_blank" rel="noopener noreferrer">Newshosting</a>
+- <a href="https://www.eweka.nl/en" target="_blank" rel="noopener noreferrer">Eweka</a>
+- <a href="https://www.easynews.com/" target="_blank" rel="noopener noreferrer">Easynews</a>
+- <a href="https://www.usenetserver.com/" target="_blank" rel="noopener noreferrer">UsenetServer</a>
+- <a href="https://www.tweaknews.eu/en" target="_blank" rel="noopener noreferrer">TweakNews</a>
 
 In the Arr apps, indexers usually go under:
 
