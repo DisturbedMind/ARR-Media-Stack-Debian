@@ -55,6 +55,49 @@ Container paths:
 
 The `/mnt/media/...` paths are the important ones. Native NZBGet reports those paths, and the containers can see those same paths, so remote path mappings stay simple.
 
+## Bring Your Own Usenet Accounts
+
+This project installs the stack, but it does not include Usenet access or indexer accounts. Before the Arr apps can search and download, you need:
+
+```text
+1. One or more Usenet indexers added in each Arr app.
+2. A Usenet provider/news server added in NZBGet.
+```
+
+Use only content you have the right to access. Indexer registrations, API limits, invite status, pricing, and provider deals change often, so treat the lists below as starting points to research.
+
+Common NZB indexers to look at:
+
+```text
+NZBGeek
+NZBFinder
+NZBPlanet
+DrunkenSlug
+DogNZB
+```
+
+Common Usenet providers/news servers to look at:
+
+```text
+Newshosting
+Eweka
+Easynews
+UsenetServer
+TweakNews
+```
+
+In the Arr apps, indexers usually go under:
+
+```text
+Settings -> Indexers
+```
+
+In NZBGet, your news server goes under:
+
+```text
+Settings -> News-Servers
+```
+
 ## Install Steps
 
 ### 1. Download The Project
