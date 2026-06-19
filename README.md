@@ -155,32 +155,54 @@ sudo chmod 600 /etc/samba/media-stack.cred
 
 ### 5. Mount The Windows Shares
 
-Edit fstab:
+Create the mount points if they do not already exist:
+
+```bash
+sudo mkdir -p /mnt/media/cinema /mnt/media/adult
+```
+
+Check your Debian user id and group id:
+
+```bash
+id
+```
+
+Most single-user Debian installs use `uid=1000,gid=1000`. If your `id` command shows different values, change `uid=1000,gid=1000` in the example below.
+
+Edit `/etc/fstab`:
 
 ```bash
 sudo nano /etc/fstab
 ```
 
-Add entries based on the example in:
+Paste this at the bottom of `/etc/fstab`:
 
 ```text
-/opt/media-stack/fstab-smb-example.txt
+//192.168.137.110/cinema /mnt/media/cinema cifs credentials=/etc/samba/media-stack.cred,uid=1000,gid=1000,iocharset=utf8,vers=3.0,file_mode=0775,dir_mode=0775,noperm,nofail,_netdev,x-systemd.automount,x-systemd.idle-timeout=60 0 0
+//192.168.137.110/adult  /mnt/media/adult  cifs credentials=/etc/samba/media-stack.cred,uid=1000,gid=1000,iocharset=utf8,vers=3.0,file_mode=0775,dir_mode=0775,noperm,nofail,_netdev,x-systemd.automount,x-systemd.idle-timeout=60 0 0
 ```
 
-The expected mounts are:
-
-```text
-//192.168.137.110/cinema  /mnt/media/cinema
-//192.168.137.110/adult   /mnt/media/adult
-```
-
-Mount and verify:
+Save the file, then mount and verify:
 
 ```bash
 sudo systemctl daemon-reload
 sudo mount -a
 findmnt /mnt/media/cinema
 findmnt /mnt/media/adult
+```
+
+You should see:
+
+```text
+//192.168.137.110/cinema  /mnt/media/cinema
+//192.168.137.110/adult   /mnt/media/adult
+```
+
+Confirm you can list the mounted shares:
+
+```bash
+ls -la /mnt/media/cinema
+ls -la /mnt/media/adult
 ```
 
 ### 6. Create Media And Download Folders
